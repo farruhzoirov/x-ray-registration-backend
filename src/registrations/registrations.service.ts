@@ -61,7 +61,7 @@ export class RegistrationsService {
         createRegistrationDto.cycleCount =
           (lastRegistration.cycleCount % 10000) + 1;
         createRegistrationDto.shortCycleCount =
-          (lastRegistration.shortCycleCount % 1000) + 1;
+          (lastRegistration.radiologyFilmNumber % 1000) + 1;
         createRegistrationDto.dailyCount =
           (dailyRegistrationData?.dailyCount || 0) + 1;
       }

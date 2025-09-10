@@ -12,7 +12,7 @@ export class Registrations {
   cycleCount: number;
 
   @Prop({ type: Number, required: true, default: 1 })
-  shortCycleCount: number;
+  radiologyFilmNumber: number;
 
   @Prop({ type: Number, required: true, default: 1 })
   dailyCount: number;
