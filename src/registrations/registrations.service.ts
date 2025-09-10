@@ -12,7 +12,7 @@ import {
 } from './schemas/registrations.schema';
 import {
   CreateRegistrationDto,
-  GetFilterdRegistrationsDto,
+  GetFilteredRegistrationsDto,
   UpdateRegistrationDto,
 } from './dto/registrations.dto';
 import { getAgeHelper } from 'src/helpers/getAge.helper';
@@ -27,7 +27,7 @@ export class RegistrationsService {
   ) {}
 
   async getFileteredRegistrations(
-    getFilteredRegistrationsDto: GetFilterdRegistrationsDto,
+    getFilteredRegistrationsDto: GetFilteredRegistrationsDto,
   ) {
     const page = getFilteredRegistrationsDto.page || 1;
     const limit = getFilteredRegistrationsDto.limit || 20;
@@ -187,9 +187,11 @@ export class RegistrationsService {
       }
 
       await this.registrationsModel.create(createRegistrationDto);
+      const countRegistrationDocuments =
+        await this.registrationsModel.countDocuments();
       return {
-        totalPagesCount: Math.ceil(countDocuments / 20),
-        totalCount: countDocuments,
+        totalPagesCount: Math.ceil(countRegistrationDocuments / 20),
+        totalCount: countRegistrationDocuments,
       };
     } catch (err) {
       console.log(err.message);

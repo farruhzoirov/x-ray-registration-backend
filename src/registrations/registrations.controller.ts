@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   CreateRegistrationDto,
-  GetFilterdRegistrationsDto,
+  GetFilteredRegistrationsDto,
   UpdateRegistrationDto,
 } from './dto/registrations.dto';
 import { RegistrationsService } from './registrations.service';
@@ -22,7 +22,7 @@ export class RegistrationsController {
   @HttpCode(HttpStatus.OK)
   @Post('/get-list')
   async getFilteredRegistrations(
-    @Body() getFilteredRegistrationsDto: GetFilterdRegistrationsDto,
+    @Body() getFilteredRegistrationsDto: GetFilteredRegistrationsDto,
   ) {
     const { data, totalCount, totalPagesCount, page, limit } =
       await this.registrationsService.getFileteredRegistrations(

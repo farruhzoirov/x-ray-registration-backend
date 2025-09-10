@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Gender } from '../schemas/registrations.schema';
 
-export class GetFilterdRegistrationsDto {
+export class GetFilteredRegistrationsDto {
   @IsOptional()
   @IsNumber()
   page: number;
