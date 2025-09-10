@@ -35,8 +35,8 @@ jobs:
             git reset --hard HEAD
             git pull origin main
 
-            rm -rf node_modules dist
-            npm install --force
+            rm -rf  dist
+            # npm install --force
             npm run  build
 
             cat > .env <<EOL
