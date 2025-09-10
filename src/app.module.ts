@@ -2,8 +2,11 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import databaseConfig from './config/database.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+import databaseConfig from './config/database.config';
+import { BackupModule } from './backup/backup.module';
+import { RegistrationsModule } from './registrations/registrations.module';
 
 @Module({
   imports: [
@@ -21,6 +24,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       },
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
+    BackupModule,
+    RegistrationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
