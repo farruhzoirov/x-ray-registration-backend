@@ -104,6 +104,10 @@ export class RegistrationsService {
       }
     }
 
+    if (getFilteredRegistrationsDto.gender) {
+      pipeline.push({ $match: { gender: getFilteredRegistrationsDto.gender } });
+    }
+
     if (getFilteredRegistrationsDto.address) {
       pipeline.push({
         $match: {

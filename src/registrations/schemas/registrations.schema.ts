@@ -80,3 +80,4 @@ RegistrationsSchema.index({ job: 1, otherJob: 1 });
 // Single index
 RegistrationsSchema.index({ birthDate: 1 });
 RegistrationsSchema.index({ createdAt: 1 });
+RegistrationsSchema.index({ gender: 1 });

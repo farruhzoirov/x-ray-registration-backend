@@ -56,6 +56,10 @@ export class GetFilteredRegistrationsDto {
 
   @IsOptional()
   visitReason?: string;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: string;
 }
 
 export class CreateRegistrationDto {
