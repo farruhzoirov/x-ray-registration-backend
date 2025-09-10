@@ -158,7 +158,7 @@ export class RegistrationsService {
   async createRegistration(
     createRegistrationDto: CreateRegistrationDto & {
       age?: number;
-      cycleCount?: number;
+      yearlyCount?: number;
       radiologyFilmNumber?: number;
       dailyCount?: number;
     },
@@ -175,15 +175,24 @@ export class RegistrationsService {
       const [countDocuments, lastRegistration, dailyRegistrationData] =
         await Promise.all([
           this.registrationsModel.countDocuments(),
-          this.registrationsModel.findOne().sort({ createdAt: -1 }),
+          this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
           this.registrationsModel
             .findOne({ createdAt: { $gte: today } })
             .sort({ dailyCount: -1 }),
         ]);
 
       if (countDocuments) {
-        createRegistrationDto.cycleCount =
-          (lastRegistration.cycleCount % 10000) + 1;
+        const currentYear = new Date().getFullYear();
+        if (
+          new Date(Object(lastRegistration).createdAt).getFullYear() ===
+          currentYear
+        ) {
+          createRegistrationDto.yearlyCount =
+            (lastRegistration.yearlyCount || 0) + 1;
+        } else {
+          createRegistrationDto.yearlyCount = 1;
+        }
+
         createRegistrationDto.radiologyFilmNumber =
           (lastRegistration.radiologyFilmNumber % 1000) + 1;
         createRegistrationDto.dailyCount =

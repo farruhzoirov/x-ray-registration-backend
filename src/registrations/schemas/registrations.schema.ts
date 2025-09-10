@@ -9,7 +9,7 @@ export type RegistrationsDocument = Registrations & Document;
 @Schema({ timestamps: true })
 export class Registrations {
   @Prop({ type: Number, required: true, default: 1 })
-  cycleCount: number;
+  yearlyCount: number;
 
   @Prop({ type: Number, required: true, default: 1 })
   radiologyFilmNumber: number;
