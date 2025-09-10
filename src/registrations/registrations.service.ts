@@ -155,7 +155,7 @@ export class RegistrationsService {
     createRegistrationDto: CreateRegistrationDto & {
       age?: number;
       cycleCount?: number;
-      shortCycleCount?: number;
+      radiologyFilmNumber?: number;
       dailyCount?: number;
     },
   ): Promise<{ totalCount: number; totalPagesCount: number }> {
@@ -180,7 +180,7 @@ export class RegistrationsService {
       if (countDocuments) {
         createRegistrationDto.cycleCount =
           (lastRegistration.cycleCount % 10000) + 1;
-        createRegistrationDto.shortCycleCount =
+        createRegistrationDto.radiologyFilmNumber =
           (lastRegistration.radiologyFilmNumber % 1000) + 1;
         createRegistrationDto.dailyCount =
           (dailyRegistrationData?.dailyCount || 0) + 1;
