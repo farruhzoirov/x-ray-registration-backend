@@ -14,25 +14,27 @@ export class GetFilterdRegistrationsDto {
   search?: string;
 
   @IsOptional()
-  @IsString()
+  @IsDateString()
   birthDateFrom?: string;
 
   @IsOptional()
-  @IsString()
+  @IsDateString()
   birthDateTo?: string;
 
   @IsOptional()
-  @IsString()
+  @IsDateString()
   createdAtFrom?: string;
 
   @IsOptional()
-  @IsString()
+  @IsDateString()
   createdAtTo?: string;
 
   @IsOptional()
+  @IsString()
   address?: string;
 
   @IsOptional()
+  @IsString()
   job?: string;
 
   @IsOptional()

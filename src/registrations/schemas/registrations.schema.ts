@@ -65,6 +65,14 @@ export const RegistrationsSchema = SchemaFactory.createForClass(Registrations);
 RegistrationsSchema.index({
   fullName: 1,
   phone: 1,
+  adress: 1,
+  otherAddress: 1,
+  job: 1,
+  otherJob: 1,
+  visitReason: 1,
+  otherVisitReason: 1,
+  radiologyReport: 1,
+  otherRadioLogyReport: 1,
 });
 RegistrationsSchema.index({ visitReason: 1, otherVisitReason: 1 });
 RegistrationsSchema.index({ job: 1, otherJob: 1 });

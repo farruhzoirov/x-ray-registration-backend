@@ -16,6 +16,8 @@ import {
   UpdateRegistrationDto,
 } from './dto/registrations.dto';
 import { getAgeHelper } from 'src/helpers/getAge.helper';
+import { universalSearchQuery } from 'src/helpers/search.helper';
+import { createDateRangeFilter } from 'src/helpers/dateRangeFilter.helper';
 
 @Injectable()
 export class RegistrationsService {
@@ -27,8 +29,93 @@ export class RegistrationsService {
   async getFileteredRegistrations(
     getFilteredRegistrationsDto: GetFilterdRegistrationsDto,
   ) {
+    const pipeline: any[] = [];
+    pipeline.push({ $sort: { createdAt: -1 } });
+
     if (getFilteredRegistrationsDto.search) {
+      const search = await universalSearchQuery(
+        getFilteredRegistrationsDto.search,
+        [
+          'fullName',
+          'phone',
+          'address',
+          'otherAddress',
+          'job',
+          'otherJob',
+          'visitReason',
+          'otherVisitReason',
+          'radiologyReport',
+          'otherRadiologyReport',
+        ],
+      );
+
+      pipeline.push({ $match: search });
     }
+
+    if (
+      getFilteredRegistrationsDto.createdAtFrom ||
+      getFilteredRegistrationsDto.createdAtTo
+    ) {
+      const createdAtFilter = createDateRangeFilter(
+        getFilteredRegistrationsDto.createdAtFrom,
+        getFilteredRegistrationsDto.createdAtTo,
+      );
+      if (createdAtFilter) {
+        pipeline.push({ $match: { createdAt: createdAtFilter } });
+      }
+    }
+
+    if (
+      getFilteredRegistrationsDto.birthDateFrom ||
+      getFilteredRegistrationsDto.birthDateTo
+    ) {
+      const birthDateFilter: any = {};
+      if (getFilteredRegistrationsDto.birthDateFrom) {
+        birthDateFilter.$gte = getFilteredRegistrationsDto.birthDateFrom;
+      }
+      if (getFilteredRegistrationsDto.birthDateTo) {
+        birthDateFilter.$lte = getFilteredRegistrationsDto.birthDateTo;
+      }
+
+      if (Object.keys(birthDateFilter).length > 0) {
+        pipeline.push({ $match: { birthDate: birthDateFilter } });
+      }
+    }
+
+    if (getFilteredRegistrationsDto.address) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { address: getFilteredRegistrationsDto.address },
+            { otherAddress: getFilteredRegistrationsDto.address },
+          ],
+        },
+      });
+    }
+
+    if (getFilteredRegistrationsDto.job) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { job: getFilteredRegistrationsDto.job },
+            { otherJob: getFilteredRegistrationsDto.job },
+          ],
+        },
+      });
+    }
+
+    if (getFilteredRegistrationsDto.visitReason) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { visitReason: getFilteredRegistrationsDto.visitReason },
+            { otherVisitReason: getFilteredRegistrationsDto.visitReason },
+          ],
+        },
+      });
+    }
+
+    return this.registrationsModel.aggregate(pipeline).exec();
   }
 
   async createRegistration(

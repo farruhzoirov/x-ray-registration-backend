@@ -19,7 +19,8 @@ import { RegistrationsService } from './registrations.service';
 export class RegistrationsController {
   constructor(private readonly registrationsService: RegistrationsService) {}
 
-  @Post('/all')
+  @HttpCode(HttpStatus.OK)
+  @Post('/get-list')
   async getFilteredRegistrations(
     @Body() getFilteredRegistrationsDto: GetFilterdRegistrationsDto,
   ) {
@@ -57,6 +58,7 @@ export class RegistrationsController {
     };
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('delete')
   async deleteRegistration(@Body('id') id: string) {
     await this.registrationsService.deleteRegistration(id);
