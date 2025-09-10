@@ -48,7 +48,7 @@ export class Registrations {
   otherVisitReason: string;
 
   @Prop({ required: true })
-  raditionDose: string;
+  radiationDose: string;
 
   @Prop({ default: null })
   radiologyReport: string;

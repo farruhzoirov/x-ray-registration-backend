@@ -79,7 +79,7 @@ export class CreateRegistrationDto {
 
   @IsString()
   @IsNotEmpty()
-  raditionDose: string;
+  radiationDose: string;
 
   @IsString()
   @IsOptional()
@@ -137,7 +137,7 @@ export class UpdateRegistrationDto {
 
   @IsString()
   @IsOptional()
-  raditionDose?: string;
+  radiationDose?: string;
 
   @IsString()
   @IsOptional()
