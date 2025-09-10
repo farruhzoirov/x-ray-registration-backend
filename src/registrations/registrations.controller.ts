@@ -24,14 +24,18 @@ export class RegistrationsController {
   async getFilteredRegistrations(
     @Body() getFilteredRegistrationsDto: GetFilterdRegistrationsDto,
   ) {
-    const registrations =
+    const { data, totalCount, totalPagesCount, page, limit } =
       await this.registrationsService.getFileteredRegistrations(
         getFilteredRegistrationsDto,
       );
     return {
       message: 'Registrations...',
-      data: registrations,
       success: true,
+      data,
+      totalCount,
+      totalPagesCount,
+      page,
+      limit,
     };
   }
 
@@ -39,10 +43,13 @@ export class RegistrationsController {
   async createRegistration(
     @Body() createRegistrationDto: CreateRegistrationDto,
   ) {
-    await this.registrationsService.createRegistration(createRegistrationDto);
+    const { totalCount, totalPagesCount } =
+      await this.registrationsService.createRegistration(createRegistrationDto);
     return {
       message: 'Registration created successfully',
       success: true,
+      totalCount,
+      totalPagesCount,
     };
   }
 
@@ -51,20 +58,26 @@ export class RegistrationsController {
   async updateRegistration(
     @Body() updateRegistrationDto: UpdateRegistrationDto,
   ) {
-    await this.registrationsService.updateRegistration(updateRegistrationDto);
+    const { totalCount, totalPagesCount } =
+      await this.registrationsService.updateRegistration(updateRegistrationDto);
     return {
       message: 'Registration updated successfully',
       success: true,
+      totalCount,
+      totalPagesCount,
     };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('delete')
   async deleteRegistration(@Body('id') id: string) {
-    await this.registrationsService.deleteRegistration(id);
+    const { totalCount, totalPagesCount } =
+      await this.registrationsService.deleteRegistration(id);
     return {
       message: 'Registration deleted successfully',
       success: true,
+      totalCount,
+      totalPagesCount,
     };
   }
 }

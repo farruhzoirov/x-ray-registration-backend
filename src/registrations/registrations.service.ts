@@ -29,8 +29,13 @@ export class RegistrationsService {
   async getFileteredRegistrations(
     getFilteredRegistrationsDto: GetFilterdRegistrationsDto,
   ) {
+    const page = getFilteredRegistrationsDto.page || 1;
+    const limit = getFilteredRegistrationsDto.limit || 20;
+    const skip = (page - 1) * limit;
     const pipeline: any[] = [];
     pipeline.push({ $sort: { createdAt: -1 } });
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
 
     if (getFilteredRegistrationsDto.search) {
       const search = await universalSearchQuery(
@@ -82,6 +87,23 @@ export class RegistrationsService {
       }
     }
 
+    if (
+      getFilteredRegistrationsDto.ageFrom ||
+      getFilteredRegistrationsDto.ageTo
+    ) {
+      const ageFilter: any = {};
+      if (getFilteredRegistrationsDto.ageFrom) {
+        ageFilter.$gte = getFilteredRegistrationsDto.ageFrom;
+      }
+      if (getFilteredRegistrationsDto.birthDateTo) {
+        ageFilter.$lte = getFilteredRegistrationsDto.ageTo;
+      }
+
+      if (Object.keys(ageFilter).length > 0) {
+        pipeline.push({ $match: { age: ageFilter } });
+      }
+    }
+
     if (getFilteredRegistrationsDto.address) {
       pipeline.push({
         $match: {
@@ -115,7 +137,18 @@ export class RegistrationsService {
       });
     }
 
-    return this.registrationsModel.aggregate(pipeline).exec();
+    const registrations = await this.registrationsModel
+      .aggregate(pipeline)
+      .exec();
+    const countDocuments = await this.registrationsModel.countDocuments();
+
+    return {
+      data: registrations,
+      totalPagesCount: Math.ceil(countDocuments / 20),
+      totalCount: countDocuments,
+      page,
+      limit,
+    };
   }
 
   async createRegistration(
@@ -125,7 +158,7 @@ export class RegistrationsService {
       shortCycleCount?: number;
       dailyCount?: number;
     },
-  ) {
+  ): Promise<{ totalCount: number; totalPagesCount: number }> {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -154,6 +187,10 @@ export class RegistrationsService {
       }
 
       await this.registrationsModel.create(createRegistrationDto);
+      return {
+        totalPagesCount: Math.ceil(countDocuments / 20),
+        totalCount: countDocuments,
+      };
     } catch (err) {
       console.log(err.message);
       throw new BadRequestException('Error in createRegistration', err.message);
@@ -182,6 +219,12 @@ export class RegistrationsService {
         updateRegistrationDto.id,
         updateRegistrationDto,
       );
+
+      const countDocuments = await this.registrationsModel.countDocuments();
+      return {
+        totalPagesCount: Math.ceil(countDocuments / 20),
+        totalCount: countDocuments,
+      };
     } catch (err) {
       console.error(err);
       throw new BadRequestException('Error in updateRegistration', err.message);
@@ -209,6 +252,11 @@ export class RegistrationsService {
       }
 
       await this.registrationsModel.findByIdAndDelete(id);
+      const countDocuments = await this.registrationsModel.countDocuments();
+      return {
+        totalPagesCount: Math.ceil(countDocuments / 20),
+        totalCount: countDocuments,
+      };
     } catch (err) {
       console.error('Error in deleteRegistration', err.message);
       throw new BadRequestException({

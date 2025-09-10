@@ -3,12 +3,21 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { Gender } from '../schemas/registrations.schema';
 
 export class GetFilterdRegistrationsDto {
+  @IsOptional()
+  @IsNumber()
+  page: number;
+
+  @IsOptional()
+  @IsNumber()
+  limit: number;
+
   @IsOptional()
   @IsString()
   search?: string;
@@ -20,6 +29,14 @@ export class GetFilterdRegistrationsDto {
   @IsOptional()
   @IsDateString()
   birthDateTo?: string;
+
+  @IsOptional()
+  @IsNumber()
+  ageFrom?: string;
+
+  @IsOptional()
+  @IsNumber()
+  ageTo?: string;
 
   @IsOptional()
   @IsDateString()
