@@ -41,7 +41,7 @@ export class RegistrationsService {
       throw new Error('Username is not found');
     }
 
-    if (authDto.userName === userName && authDto.password === password) {
+    if (authDto.username === userName && authDto.password === password) {
       return true;
     }
 

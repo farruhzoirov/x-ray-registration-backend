@@ -24,7 +24,6 @@ export class RegistrationsController {
   @HttpCode(HttpStatus.OK)
   @Post('/auth')
   async authService(@Body() authDto: AuthDto) {
-    console.log(authDto);
     const isValid = await this.registrationsService.authService(authDto);
 
     if (!isValid) {

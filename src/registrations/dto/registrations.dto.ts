@@ -12,7 +12,7 @@ import { Gender } from '../schemas/registrations.schema';
 
 export class AuthDto {
   @IsString()
-  userName: string;
+  username: string;
 
   @IsString()
   password: string;
