@@ -44,6 +44,7 @@ jobs:
             LOGIN=${{ secrets.LOGIN }}
             PASSWORD=${{ secrets.PASSWORD }}
             ADMIN_1_ID=${{ secrets.ADMIN_1_ID }}
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             EOL
 
             pm2 start dist/main.js --name x-ray
