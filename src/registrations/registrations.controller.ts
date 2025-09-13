@@ -28,13 +28,13 @@ export class RegistrationsController {
 
     if (!isValid) {
       throw new UnauthorizedException({
-        status: false,
+        success: false,
         message: 'Invalid credential',
       });
     }
 
     return {
-      status: true,
+      success: true,
       message: 'Authorized successfully',
     };
   }
