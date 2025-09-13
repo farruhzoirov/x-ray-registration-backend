@@ -45,7 +45,7 @@ export class RegistrationsController {
     @Body() getFilteredRegistrationsDto: GetFilteredRegistrationsDto,
   ) {
     const { data, totalCount, totalPagesCount, page, limit } =
-      await this.registrationsService.getFileteredRegistrations(
+      await this.registrationsService.getFilteredRegistrations(
         getFilteredRegistrationsDto,
       );
     return {

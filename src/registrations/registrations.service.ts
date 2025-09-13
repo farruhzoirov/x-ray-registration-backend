@@ -48,18 +48,17 @@ export class RegistrationsService {
     return false;
   }
 
-  async getFileteredRegistrations(
-    getFilteredRegistrationsDto: GetFilteredRegistrationsDto,
-  ) {
-    const page = getFilteredRegistrationsDto.page || 1;
-    const limit = getFilteredRegistrationsDto.limit || 20;
+  async getFilteredRegistrations(dto: GetFilteredRegistrationsDto) {
+    const page = dto.page && dto.page > 0 ? dto.page : 1;
+    const limit = dto.limit && dto.limit > 0 ? dto.limit : 20;
     const skip = (page - 1) * limit;
-    const filters: any = {};
 
-    if (getFilteredRegistrationsDto.search) {
-      const search = await universalSearchQuery(
-        getFilteredRegistrationsDto.search.trim(),
-        [
+    const filters: Record<string, any> = {};
+
+    if (dto.search?.trim()) {
+      Object.assign(
+        filters,
+        await universalSearchQuery(dto.search.trim(), [
           'fullName',
           'phone',
           'address',
@@ -70,155 +69,67 @@ export class RegistrationsService {
           'otherVisitReason',
           'radiologyReport',
           'otherRadiologyReport',
-        ],
+        ]),
       );
-      Object.assign(filters, search);
     }
 
-    if (
-      getFilteredRegistrationsDto.createdAtFrom ||
-      getFilteredRegistrationsDto.createdAtTo
-    ) {
+    if (dto.createdAtFrom || dto.createdAtTo) {
       const createdAtFilter = createDateRangeFilter(
-        getFilteredRegistrationsDto.createdAtFrom,
-        getFilteredRegistrationsDto.createdAtTo,
+        dto.createdAtFrom,
+        dto.createdAtTo,
       );
-      if (createdAtFilter) {
-        filters.createdAt = createdAtFilter;
-      }
+      if (createdAtFilter) filters.createdAt = createdAtFilter;
     }
 
-    if (
-      getFilteredRegistrationsDto.birthDateFrom ||
-      getFilteredRegistrationsDto.birthDateTo
-    ) {
-      const birthDateFilter: any = {};
-      if (getFilteredRegistrationsDto.birthDateFrom) {
-        birthDateFilter.$gte = getFilteredRegistrationsDto.birthDateFrom;
-      }
-      if (getFilteredRegistrationsDto.birthDateTo) {
-        birthDateFilter.$lte = getFilteredRegistrationsDto.birthDateTo;
-      }
-      if (Object.keys(birthDateFilter).length > 0) {
-        filters.birthDate = birthDateFilter;
-      }
+    if (dto.birthDateFrom || dto.birthDateTo) {
+      filters.birthDate = {};
+      if (dto.birthDateFrom) filters.birthDate.$gte = dto.birthDateFrom;
+      if (dto.birthDateTo) filters.birthDate.$lte = dto.birthDateTo;
     }
 
-    if (
-      getFilteredRegistrationsDto.ageFrom ||
-      getFilteredRegistrationsDto.ageTo
-    ) {
-      const ageFilter: any = {};
-      if (getFilteredRegistrationsDto.ageFrom) {
-        ageFilter.$gte = getFilteredRegistrationsDto.ageFrom;
-      }
-      if (getFilteredRegistrationsDto.ageTo) {
-        ageFilter.$lte = getFilteredRegistrationsDto.ageTo;
-      }
-      if (Object.keys(ageFilter).length > 0) {
-        filters.age = ageFilter;
-      }
+    if (dto.ageFrom || dto.ageTo) {
+      filters.age = {};
+      if (dto.ageFrom) filters.age.$gte = dto.ageFrom;
+      if (dto.ageTo) filters.age.$lte = dto.ageTo;
     }
 
-    if (getFilteredRegistrationsDto.gender) {
-      filters.gender = getFilteredRegistrationsDto.gender;
-    }
+    if (dto.gender) filters.gender = dto.gender;
 
-    if (
-      getFilteredRegistrationsDto.address ||
-      getFilteredRegistrationsDto.otherAddress
-    ) {
-      if (getFilteredRegistrationsDto.address) {
-        filters.address = {
-          $regex: getFilteredRegistrationsDto.address.trim(),
-          $options: 'i',
-        };
+    const addRegexFilter = (field: string, value?: string) => {
+      if (value?.trim()) {
+        filters[field] = { $regex: value.trim(), $options: 'i' };
       }
-      if (getFilteredRegistrationsDto.otherAddress) {
-        filters.otherAddress = {
-          $regex: getFilteredRegistrationsDto.otherAddress.trim(),
-          $options: 'i',
-        };
-      }
-    }
+    };
 
-    if (
-      getFilteredRegistrationsDto.job ||
-      getFilteredRegistrationsDto.otherAddress
-    ) {
-      if (getFilteredRegistrationsDto.job) {
-        filters.job = {
-          $regex: getFilteredRegistrationsDto.job.trim(),
-          $options: 'i',
-        };
-      }
-      if (getFilteredRegistrationsDto.otherJob) {
-        filters.otherJob = {
-          $regex: getFilteredRegistrationsDto.otherJob.trim(),
-          $options: 'i',
-        };
-      }
-    }
+    addRegexFilter('address', dto.address);
+    addRegexFilter('otherAddress', dto.otherAddress);
+    addRegexFilter('job', dto.job);
+    addRegexFilter('otherJob', dto.otherJob);
+    addRegexFilter('visitReason', dto.visitReason);
+    addRegexFilter('otherVisitReason', dto.otherVisitReason);
+    addRegexFilter('radiologyReport', dto.radiologyReport);
+    addRegexFilter('otherRadiologyReport', dto.otherRadiologyReport);
 
-    if (
-      getFilteredRegistrationsDto.visitReason ||
-      getFilteredRegistrationsDto.otherVisitReason
-    ) {
-      if (getFilteredRegistrationsDto.visitReason) {
-        filters.visitReason = {
-          $regex: getFilteredRegistrationsDto.visitReason.trim(),
-          $option: 'i',
-        };
-      }
-
-      if (getFilteredRegistrationsDto.otherVisitReason) {
-        filters.otherVisitReason = {
-          $regex: getFilteredRegistrationsDto.otherVisitReason.trim(),
-          $option: 'i',
-        };
-      }
-    }
-
-    if (
-      getFilteredRegistrationsDto.radiologyReport ||
-      getFilteredRegistrationsDto.otherRadiologyReport
-    ) {
-      if (getFilteredRegistrationsDto.radiologyReport) {
-        filters.radiologyReport = {
-          $regex: getFilteredRegistrationsDto.radiologyReport.trim(),
-          $option: 'i',
-        };
-      }
-
-      if (getFilteredRegistrationsDto.otherRadiologyReport) {
-        filters.otherRadiologyReport = {
-          $regex: getFilteredRegistrationsDto.otherRadiologyReport.trim(),
-          $option: 'i',
-        };
-      }
-    }
     const pipeline: any[] = [
       { $match: filters },
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
     ];
-    const [registrations, countDocuments, lastRegistration] = await Promise.all(
-      [
-        this.registrationsModel.aggregate(pipeline).exec(),
-        this.registrationsModel.countDocuments(filters),
-        this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
-      ],
-    );
+
+    const [registrations, totalCount, lastRegistration] = await Promise.all([
+      this.registrationsModel.aggregate(pipeline).exec(),
+      this.registrationsModel.countDocuments(filters),
+      this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
+    ]);
 
     if (lastRegistration) {
-      const index = registrations.findIndex(
+      const idx = registrations.findIndex(
         (reg) => String(reg._id) === String(lastRegistration._id),
       );
-
-      if (index !== -1) {
-        registrations[index] = {
-          ...registrations[index],
+      if (idx !== -1) {
+        registrations[idx] = {
+          ...registrations[idx],
           isDeletable: true,
         };
       }
@@ -226,8 +137,8 @@ export class RegistrationsService {
 
     return {
       data: registrations,
-      totalPagesCount: Math.ceil(countDocuments / limit),
-      totalCount: countDocuments,
+      totalPagesCount: Math.ceil(totalCount / limit),
+      totalCount,
       page,
       limit,
     };
