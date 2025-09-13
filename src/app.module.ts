@@ -5,12 +5,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import databaseConfig from './config/database.config';
-import { BackupModule } from './backup/backup.module';
 import { RegistrationsModule } from './registrations/registrations.module';
+import authConfig from './config/auth.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [databaseConfig] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [databaseConfig, authConfig],
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {

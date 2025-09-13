@@ -4,10 +4,12 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UnauthorizedException,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import {
+  AuthDto,
   CreateRegistrationDto,
   GetFilteredRegistrationsDto,
   UpdateRegistrationDto,
@@ -18,6 +20,25 @@ import { RegistrationsService } from './registrations.service';
 @UsePipes(new ValidationPipe({ whitelist: true }))
 export class RegistrationsController {
   constructor(private readonly registrationsService: RegistrationsService) {}
+
+  @HttpCode(HttpStatus.OK)
+  @Post('/auth')
+  async authService(@Body() authDto: AuthDto) {
+    console.log(authDto);
+    const isValid = await this.registrationsService.authService(authDto);
+
+    if (!isValid) {
+      throw new UnauthorizedException({
+        status: false,
+        message: 'Invalid credential',
+      });
+    }
+
+    return {
+      status: true,
+      message: 'Authorized successfully',
+    };
+  }
 
   @HttpCode(HttpStatus.OK)
   @Post('/get-list')

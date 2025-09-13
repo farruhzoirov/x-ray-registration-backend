@@ -11,6 +11,7 @@ import {
   RegistrationsDocument,
 } from './schemas/registrations.schema';
 import {
+  AuthDto,
   CreateRegistrationDto,
   GetFilteredRegistrationsDto,
   UpdateRegistrationDto,
@@ -18,13 +19,34 @@ import {
 import { getAgeHelper } from 'src/helpers/getAge.helper';
 import { universalSearchQuery } from 'src/helpers/search.helper';
 import { createDateRangeFilter } from 'src/helpers/dateRangeFilter.helper';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RegistrationsService {
   constructor(
     @InjectModel(Registrations.name)
     private readonly registrationsModel: Model<RegistrationsDocument>,
+    private readonly configService: ConfigService,
   ) {}
+
+  async authService(authDto: AuthDto): Promise<boolean> {
+    const userName = this.configService.get('AUTH').LOGIN;
+    const password = this.configService.get('AUTH').PASSWORD;
+
+    if (!userName) {
+      throw new Error('Username is not found');
+    }
+
+    if (!password) {
+      throw new Error('Username is not found');
+    }
+
+    if (authDto.userName === userName && authDto.password === password) {
+      return true;
+    }
+
+    return false;
+  }
 
   async getFileteredRegistrations(
     getFilteredRegistrationsDto: GetFilteredRegistrationsDto,
@@ -32,14 +54,11 @@ export class RegistrationsService {
     const page = getFilteredRegistrationsDto.page || 1;
     const limit = getFilteredRegistrationsDto.limit || 20;
     const skip = (page - 1) * limit;
-    const pipeline: any[] = [];
-    pipeline.push({ $sort: { createdAt: -1 } });
-    pipeline.push({ $skip: skip });
-    pipeline.push({ $limit: limit });
+    const filters: any = {};
 
     if (getFilteredRegistrationsDto.search) {
       const search = await universalSearchQuery(
-        getFilteredRegistrationsDto.search,
+        getFilteredRegistrationsDto.search.trim(),
         [
           'fullName',
           'phone',
@@ -53,8 +72,7 @@ export class RegistrationsService {
           'otherRadiologyReport',
         ],
       );
-
-      pipeline.push({ $match: search });
+      Object.assign(filters, search);
     }
 
     if (
@@ -66,7 +84,7 @@ export class RegistrationsService {
         getFilteredRegistrationsDto.createdAtTo,
       );
       if (createdAtFilter) {
-        pipeline.push({ $match: { createdAt: createdAtFilter } });
+        filters.createdAt = createdAtFilter;
       }
     }
 
@@ -81,9 +99,8 @@ export class RegistrationsService {
       if (getFilteredRegistrationsDto.birthDateTo) {
         birthDateFilter.$lte = getFilteredRegistrationsDto.birthDateTo;
       }
-
       if (Object.keys(birthDateFilter).length > 0) {
-        pipeline.push({ $match: { birthDate: birthDateFilter } });
+        filters.birthDate = birthDateFilter;
       }
     }
 
@@ -95,60 +112,127 @@ export class RegistrationsService {
       if (getFilteredRegistrationsDto.ageFrom) {
         ageFilter.$gte = getFilteredRegistrationsDto.ageFrom;
       }
-      if (getFilteredRegistrationsDto.birthDateTo) {
+      if (getFilteredRegistrationsDto.ageTo) {
         ageFilter.$lte = getFilteredRegistrationsDto.ageTo;
       }
-
       if (Object.keys(ageFilter).length > 0) {
-        pipeline.push({ $match: { age: ageFilter } });
+        filters.age = ageFilter;
       }
     }
 
     if (getFilteredRegistrationsDto.gender) {
-      pipeline.push({ $match: { gender: getFilteredRegistrationsDto.gender } });
+      filters.gender = getFilteredRegistrationsDto.gender;
     }
 
-    if (getFilteredRegistrationsDto.address) {
-      pipeline.push({
-        $match: {
-          $or: [
-            { address: getFilteredRegistrationsDto.address },
-            { otherAddress: getFilteredRegistrationsDto.address },
-          ],
-        },
-      });
+    if (
+      getFilteredRegistrationsDto.address ||
+      getFilteredRegistrationsDto.otherAddress
+    ) {
+      if (getFilteredRegistrationsDto.address) {
+        filters.address = {
+          $regex: getFilteredRegistrationsDto.address.trim(),
+          $options: 'i',
+        };
+      }
+      if (getFilteredRegistrationsDto.otherAddress) {
+        filters.otherAddress = {
+          $regex: getFilteredRegistrationsDto.otherAddress.trim(),
+          $options: 'i',
+        };
+      }
     }
 
-    if (getFilteredRegistrationsDto.job) {
-      pipeline.push({
-        $match: {
-          $or: [
-            { job: getFilteredRegistrationsDto.job },
-            { otherJob: getFilteredRegistrationsDto.job },
-          ],
-        },
-      });
+    if (
+      getFilteredRegistrationsDto.job ||
+      getFilteredRegistrationsDto.otherAddress
+    ) {
+      if (getFilteredRegistrationsDto.job) {
+        filters.job = {
+          $regex: getFilteredRegistrationsDto.job.trim(),
+          $options: 'i',
+        };
+      }
+      if (getFilteredRegistrationsDto.otherJob) {
+        filters.otherJob = {
+          $regex: getFilteredRegistrationsDto.otherJob.trim(),
+          $options: 'i',
+        };
+      }
     }
 
-    if (getFilteredRegistrationsDto.visitReason) {
-      pipeline.push({
-        $match: {
-          $or: [
-            { visitReason: getFilteredRegistrationsDto.visitReason },
-            { otherVisitReason: getFilteredRegistrationsDto.visitReason },
-          ],
-        },
-      });
+    if (
+      getFilteredRegistrationsDto.visitReason ||
+      getFilteredRegistrationsDto.otherVisitReason
+    ) {
+      if (getFilteredRegistrationsDto.visitReason) {
+        filters.visitReason = {
+          $regex: getFilteredRegistrationsDto.visitReason.trim(),
+          $option: 'i',
+        };
+      }
+
+      if (getFilteredRegistrationsDto.otherVisitReason) {
+        filters.otherVisitReason = {
+          $regex: getFilteredRegistrationsDto.otherVisitReason.trim(),
+          $option: 'i',
+        };
+      }
     }
 
-    const registrations = await this.registrationsModel
-      .aggregate(pipeline)
-      .exec();
-    const countDocuments = await this.registrationsModel.countDocuments();
+    if (
+      getFilteredRegistrationsDto.radiologyReport ||
+      getFilteredRegistrationsDto.otherRadiologyReport
+    ) {
+      if (getFilteredRegistrationsDto.radiologyReport) {
+        filters.radiologyReport = {
+          $regex: getFilteredRegistrationsDto.radiologyReport.trim(),
+          $option: 'i',
+        };
+      }
+
+      if (getFilteredRegistrationsDto.otherRadiologyReport) {
+        const escapedSearch =
+          getFilteredRegistrationsDto.otherRadiologyReport.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            '\\$&',
+          );
+
+        filters.otherRadiologyReport = {
+          $regex: escapedSearch,
+          $option: 'i',
+        };
+      }
+    }
+    const pipeline: any[] = [
+      { $match: filters },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
+    const [registrations, countDocuments, lastRegistration] = await Promise.all(
+      [
+        this.registrationsModel.aggregate(pipeline).exec(),
+        this.registrationsModel.countDocuments(filters),
+        this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
+      ],
+    );
+
+    if (lastRegistration) {
+      const index = registrations.findIndex(
+        (reg) => String(reg._id) === String(lastRegistration._id),
+      );
+
+      if (index !== -1) {
+        registrations[index] = {
+          ...registrations[index],
+          isDeleteble: true,
+        };
+      }
+    }
 
     return {
       data: registrations,
-      totalPagesCount: Math.ceil(countDocuments / 20),
+      totalPagesCount: Math.ceil(countDocuments / limit),
       totalCount: countDocuments,
       page,
       limit,

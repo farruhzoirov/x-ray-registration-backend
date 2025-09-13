@@ -6,8 +6,17 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Length,
 } from 'class-validator';
 import { Gender } from '../schemas/registrations.schema';
+
+export class AuthDto {
+  @IsString()
+  userName: string;
+
+  @IsString()
+  password: string;
+}
 
 export class GetFilteredRegistrationsDto {
   @IsOptional()
@@ -23,11 +32,11 @@ export class GetFilteredRegistrationsDto {
   search?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   birthDateFrom?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   birthDateTo?: string;
 
   @IsOptional()
@@ -52,14 +61,35 @@ export class GetFilteredRegistrationsDto {
 
   @IsOptional()
   @IsString()
+  otherAddress?: string;
+
+  @IsOptional()
+  @IsString()
   job?: string;
 
   @IsOptional()
+  @IsString()
+  otherJob?: string;
+
+  @IsOptional()
+  @IsString()
   visitReason?: string;
+
+  @IsOptional()
+  @IsString()
+  otherVisitReason?: string;
 
   @IsOptional()
   @IsEnum(Gender)
   gender?: string;
+
+  @IsOptional()
+  @IsString()
+  radiologyReport: string;
+
+  @IsOptional()
+  @IsString()
+  otherRadiologyReport: string;
 }
 
 export class CreateRegistrationDto {
@@ -75,7 +105,8 @@ export class CreateRegistrationDto {
   @IsOptional()
   otherAddress?: string;
 
-  @IsDateString()
+  @IsString()
+  @Length(4, 4)
   birthDate: string;
 
   @IsEnum(Gender)
@@ -132,7 +163,8 @@ export class UpdateRegistrationDto {
   @IsOptional()
   otherAddress?: string;
 
-  @IsDateString()
+  @IsString()
+  @Length(4, 4)
   @IsOptional()
   birthDate?: string;
 
