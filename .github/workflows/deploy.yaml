@@ -41,8 +41,8 @@ jobs:
 
             cat > .env <<EOL
             MONGODB_URI=${{ secrets.MONGODB_URI }}
-            LOGIN=${{secrets.LOGIN}}
-            PASSWORD=${secrets.PASSWORD}
+            LOGIN=${{ secrets.LOGIN }}
+            PASSWORD=${{ secrets.PASSWORD }}
             EOL
 
             pm2 start dist/main.js --name x-ray
