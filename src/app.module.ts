@@ -7,12 +7,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 import databaseConfig from './config/database.config';
 import { RegistrationsModule } from './registrations/registrations.module';
 import authConfig from './config/auth.config';
+import botConfig from './config/bot.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, authConfig],
+      load: [databaseConfig, authConfig, botConfig],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

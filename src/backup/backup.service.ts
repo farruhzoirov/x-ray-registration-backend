@@ -1,27 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import TelegramBot from 'node-telegram-bot-api';
 import * as fs from 'fs';
+import { ConfigService } from '@nestjs/config';
+import * as path from 'path';
 
 const execAsync = promisify(exec);
 
 @Injectable()
 export class BackupService {
-  private bot = new TelegramBot('', { polling: false });
-  private chatId = '';
-  @Cron('55 22 * * *')
+  private readonly logger = new Logger(BackupService.name);
+  private bot: TelegramBot;
+  private chatId: string;
+  private mongoUri: string;
+  private userIds: string[];
+
+  constructor(private readonly configService: ConfigService) {
+    this.bot = new TelegramBot(
+      this.configService.get('BOT').TELEGRAM_BOT_TOKEN,
+      { polling: false },
+    );
+    this.mongoUri = this.configService.get('CONFIG_DATABASE').MONGODB_URI;
+    this.userIds = [
+      this.configService.get('BOT').ADMIN_1_ID,
+      // this.configService.get('BOT').ADMIN_2_ID,
+      // this.configService.get('BOT').USER_ID,
+    ];
+  }
+
+  @Cron('35 23 * * *')
   async handleCron() {
+    const fileName = `backup-${new Date().toISOString().split('T')[0]}.csv`;
+    const filePath = path.join(__dirname, '../../backups', fileName);
+
     try {
-      const fileName = `backup-${new Date().toISOString().split('T')[0]}.csv`;
-      const filePath = `./${fileName}`;
-      const command = `mongoexport --uri="${''}" --collection=products --type=csv --fields="_id,nameUz,nameRu,nameEn" --out="${filePath}"`;
+      if (!fs.existsSync(path.dirname(filePath))) {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      }
+
+      const command = `mongoexport --uri="${this.mongoUri}" --collection=registrations --type=csv --fields="_id,yearlyCount,radiologyFilmNumber,dailyCount,fullName,address,otherAddress,birthDate,age,gender,job,otherJob,visitReason,otherVisitReason,radiationDose,radiologyReport,otherRadiologyReport,phone,createdAt,updatedAt" --out="${filePath}"`;
       await execAsync(command);
-      await this.bot.sendDocument(this.chatId, fs.createReadStream(filePath));
-      console.log('✅ Backup done and sent to Telegram!');
+
+      if (fs.existsSync(filePath)) {
+        await this.bot.sendDocument(
+          this.userIds[0],
+          fs.createReadStream(filePath),
+        );
+        this.logger.log('✅ Backup done and sent to Telegram!');
+      } else {
+        this.logger.error('❌ Backup file not found after export!');
+      }
     } catch (err) {
-      console.error('❌ Backup error:', err);
+      this.logger.error('❌ Backup error:', err);
+    } finally {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
   }
 }
