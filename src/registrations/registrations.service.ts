@@ -29,7 +29,7 @@ export class RegistrationsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async authService(authDto: AuthDto): Promise<boolean> {
+  async auth(authDto: AuthDto): Promise<boolean> {
     const userName = this.configService.get('AUTH').LOGIN;
     const password = this.configService.get('AUTH').PASSWORD;
 
@@ -40,11 +40,6 @@ export class RegistrationsService {
     if (!password) {
       throw new Error('Username is not found');
     }
-
-    console.log('env', userName, password);
-
-    console.log('User', authDto.username);
-    console.log('password', authDto.password);
 
     if (authDto.username === userName && authDto.password === password) {
       return true;
@@ -196,14 +191,8 @@ export class RegistrationsService {
       }
 
       if (getFilteredRegistrationsDto.otherRadiologyReport) {
-        const escapedSearch =
-          getFilteredRegistrationsDto.otherRadiologyReport.replace(
-            /[.*+?^${}()|[\]\\]/g,
-            '\\$&',
-          );
-
         filters.otherRadiologyReport = {
-          $regex: escapedSearch,
+          $regex: getFilteredRegistrationsDto.otherRadiologyReport.trim(),
           $option: 'i',
         };
       }
@@ -230,7 +219,7 @@ export class RegistrationsService {
       if (index !== -1) {
         registrations[index] = {
           ...registrations[index],
-          isDeleteble: true,
+          isDeletable: true,
         };
       }
     }
