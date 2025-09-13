@@ -41,6 +41,8 @@ export class RegistrationsService {
       throw new Error('Username is not found');
     }
 
+    console.log('env', userName, password);
+
     console.log('User', authDto.username);
     console.log('password', authDto.password);
 
