@@ -44,6 +44,7 @@ jobs:
             LOGIN=${{ secrets.LOGIN }}
             PASSWORD=${{ secrets.PASSWORD }}
             ADMIN_1_ID=${{ secrets.ADMIN_1_ID }}
+            ADMIN_2_ID=${{ secrets.ADMIN_2_ID }}
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             EOL
 

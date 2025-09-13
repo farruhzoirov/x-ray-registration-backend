@@ -8,6 +8,7 @@ import databaseConfig from './config/database.config';
 import { RegistrationsModule } from './registrations/registrations.module';
 import authConfig from './config/auth.config';
 import botConfig from './config/bot.config';
+import { BackupModule } from './backup/backup.module';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import botConfig from './config/bot.config';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    // BackupModule,
+    BackupModule,
     RegistrationsModule,
   ],
   controllers: [AppController],

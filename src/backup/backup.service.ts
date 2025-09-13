@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 
 const execAsync = promisify(exec);
+import * as crypto from 'crypto';
+(global as any).crypto = crypto;
 
 @Injectable()
 export class BackupService {
@@ -25,12 +27,12 @@ export class BackupService {
     this.mongoUri = this.configService.get('CONFIG_DATABASE').MONGODB_URI;
     this.userIds = [
       this.configService.get('BOT').ADMIN_1_ID,
-      // this.configService.get('BOT').ADMIN_2_ID,
+      this.configService.get('BOT').ADMIN_2_ID,
       // this.configService.get('BOT').USER_ID,
     ];
   }
 
-  @Cron('36 23 * * *')
+  @Cron('45 23 * * *')
   async handleCron() {
     const fileName = `backup-${new Date().toISOString().split('T')[0]}.csv`;
     const filePath = path.join(__dirname, '../../backups', fileName);
@@ -44,10 +46,10 @@ export class BackupService {
       await execAsync(command);
 
       if (fs.existsSync(filePath)) {
-        await this.bot.sendDocument(
-          this.userIds[0],
-          fs.createReadStream(filePath),
-        );
+        for (const userId of this.userIds) {
+          await this.bot.sendDocument(userId, fs.createReadStream(filePath));
+        }
+
         this.logger.log('✅ Backup done and sent to Telegram!');
       } else {
         this.logger.error('❌ Backup file not found after export!');
