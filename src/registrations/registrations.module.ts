@@ -6,6 +6,7 @@ import {
   Registrations,
   RegistrationsSchema,
 } from './schemas/registrations.schema';
+import { BackupService } from 'src/backup/backup.service';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import {
     ]),
   ],
   controllers: [RegistrationsController],
-  providers: [RegistrationsService],
+  providers: [RegistrationsService, BackupService],
 })
 export class RegistrationsModule {}

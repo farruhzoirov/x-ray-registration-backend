@@ -21,6 +21,7 @@ import { universalSearchQuery } from 'src/helpers/search.helper';
 import { createDateRangeFilter } from 'src/helpers/dateRangeFilter.helper';
 import { ConfigService } from '@nestjs/config';
 import { formatDate } from 'src/helpers/formatDate.helper';
+import { BackupService } from 'src/backup/backup.service';
 
 @Injectable()
 export class RegistrationsService {
@@ -28,6 +29,7 @@ export class RegistrationsService {
     @InjectModel(Registrations.name)
     private readonly registrationsModel: Model<RegistrationsDocument>,
     private readonly configService: ConfigService,
+    private readonly backupService: BackupService
   ) {}
 
   async auth(authDto: AuthDto): Promise<boolean> {
@@ -209,6 +211,7 @@ export class RegistrationsService {
       await this.registrationsModel.create(createRegistrationDto);
       const countRegistrationDocuments =
         await this.registrationsModel.countDocuments();
+        this.backupService.handleCron()
       return {
         totalPagesCount: Math.ceil(countRegistrationDocuments / 20),
         totalCount: countRegistrationDocuments,
@@ -243,6 +246,8 @@ export class RegistrationsService {
       );
 
       const countDocuments = await this.registrationsModel.countDocuments();
+      this.backupService.handleCron()
+
       return {
         totalPagesCount: Math.ceil(countDocuments / 20),
         totalCount: countDocuments,
@@ -275,6 +280,8 @@ export class RegistrationsService {
 
       await this.registrationsModel.findByIdAndDelete(id);
       const countDocuments = await this.registrationsModel.countDocuments();
+      this.backupService.handleCron()
+
       return {
         totalPagesCount: Math.ceil(countDocuments / 20),
         totalCount: countDocuments,

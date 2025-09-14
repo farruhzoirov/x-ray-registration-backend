@@ -19,7 +19,7 @@ import { RegistrationsService } from './registrations.service';
 @Controller('registrations')
 @UsePipes(new ValidationPipe({ whitelist: true }))
 export class RegistrationsController {
-  constructor(private readonly registrationsService: RegistrationsService) {}
+  constructor(private readonly registrationsService: RegistrationsService){}
 
   @HttpCode(HttpStatus.OK)
   @Post('/auth')
