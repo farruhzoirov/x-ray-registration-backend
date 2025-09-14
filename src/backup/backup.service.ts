@@ -15,7 +15,6 @@ import * as crypto from 'crypto';
 export class BackupService {
   private readonly logger = new Logger(BackupService.name);
   private bot: TelegramBot;
-  private chatId: string;
   private mongoUri: string;
   private userIds: string[];
 
@@ -28,11 +27,11 @@ export class BackupService {
     this.userIds = [
       this.configService.get('BOT').ADMIN_1_ID,
       this.configService.get('BOT').ADMIN_2_ID,
-      // this.configService.get('BOT').USER_ID,
+      this.configService.get('BOT').USER_ID,
     ];
   }
 
-  @Cron('58 20 * * *')
+  @Cron('00 19 * * *')
   async handleCron() {
     const fileName = `backup-${new Date().toISOString().split('T')[0]}.csv`;
     const filePath = path.join(__dirname, '../../backups', fileName);
@@ -47,7 +46,9 @@ export class BackupService {
 
       if (fs.existsSync(filePath)) {
         for (const userId of this.userIds) {
-          await this.bot.sendDocument(userId, fs.createReadStream(filePath));
+          if (userId) {
+            await this.bot.sendDocument(userId, fs.createReadStream(filePath));
+          }
         }
 
         this.logger.log('✅ Backup done and sent to Telegram!');

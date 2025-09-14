@@ -20,6 +20,7 @@ import { getAgeHelper } from 'src/helpers/getAge.helper';
 import { universalSearchQuery } from 'src/helpers/search.helper';
 import { createDateRangeFilter } from 'src/helpers/dateRangeFilter.helper';
 import { ConfigService } from '@nestjs/config';
+import { formatDate } from 'src/helpers/formatDate.helper';
 
 @Injectable()
 export class RegistrationsService {
@@ -154,23 +155,18 @@ export class RegistrationsService {
   ): Promise<{ totalCount: number; totalPagesCount: number }> {
     try {
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
       if (createRegistrationDto.birthDate) {
         createRegistrationDto.age = await getAgeHelper(
           createRegistrationDto.birthDate,
         );
       }
 
-      const [countDocuments, lastRegistration, dailyRegistrationData] =
-        await Promise.all([
-          this.registrationsModel.countDocuments(),
-          this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
-          this.registrationsModel
-            .findOne({ createdAt: { $gte: today } })
-            .sort({ dailyCount: -1 }),
-        ]);
+      const [countDocuments, lastRegistration] = await Promise.all([
+        this.registrationsModel.countDocuments(),
+        this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
+      ]);
 
-      if (countDocuments) {
+      if (countDocuments && lastRegistration) {
         const currentYear = new Date().getFullYear();
         if (
           new Date(Object(lastRegistration).createdAt).getFullYear() ===
@@ -184,8 +180,18 @@ export class RegistrationsService {
 
         createRegistrationDto.radiologyFilmNumber =
           (lastRegistration.radiologyFilmNumber % 1000) + 1;
-        createRegistrationDto.dailyCount =
-          (dailyRegistrationData?.dailyCount || 0) + 1;
+
+        const [formatCreatedAt, formatToday] = await Promise.all([
+          formatDate(Object(lastRegistration).createdAt),
+          formatDate(today),
+        ]);
+
+        if (formatCreatedAt === formatToday) {
+          createRegistrationDto.dailyCount =
+            Object(lastRegistration)?.dailyCount + 1;
+        } else {
+          createRegistrationDto.dailyCount = 1;
+        }
       }
 
       await this.registrationsModel.create(createRegistrationDto);
