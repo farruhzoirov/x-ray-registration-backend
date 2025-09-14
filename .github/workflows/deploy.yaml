@@ -40,7 +40,7 @@ jobs:
             git reset --hard HEAD
             git pull origin main
 
-            npm install --force
+            # npm install --force
             npm run build
 
             cat > .env <<EOL
