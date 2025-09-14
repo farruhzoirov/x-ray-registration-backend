@@ -31,18 +31,18 @@ export class RegistrationsService {
   ) {}
 
   async auth(authDto: AuthDto): Promise<boolean> {
-    const userName = this.configService.get('AUTH').LOGIN;
+    const username = this.configService.get('AUTH').LOGIN;
     const password = this.configService.get('AUTH').PASSWORD;
 
-    if (!userName) {
-      throw new Error('Username is not found');
+    if (!username) {
+      throw new Error('username is not found');
     }
 
     if (!password) {
-      throw new Error('Username is not found');
+      throw new Error('Password is not found');
     }
 
-    if (authDto.username === userName && authDto.password === password) {
+    if (authDto.username === username && authDto.password === password) {
       return true;
     }
 
