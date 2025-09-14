@@ -20,9 +20,14 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
+            # NVM ni yoqish (node, npm, pm2 ishlashi uchun)
+            export NVM_DIR="/root/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            # Agar pm2 o‘rnatilmagan bo‘lsa → global qilib o‘rnatamiz
             if ! command -v pm2 &> /dev/null
             then
-              sudo npm install -g pm2
+              npm install -g pm2
             fi
 
             cd /home/${{ secrets.SERVER_USER }}
@@ -35,9 +40,8 @@ jobs:
             git reset --hard HEAD
             git pull origin main
 
-            # rm -rf  dist
             npm install --force
-            npm run  build
+            npm run build
 
             cat > .env <<EOL
             MONGODB_URI=${{ secrets.MONGODB_URI }}
@@ -49,6 +53,5 @@ jobs:
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             EOL
 
-            pm2 start dist/main.js --name x-ray
-            pm2 reload x-ray
+            pm2 start dist/main.js --name x-ray || pm2 restart x-ray
             pm2 save
