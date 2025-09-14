@@ -79,6 +79,7 @@ export class RegistrationsService {
         dto.createdAtFrom,
         dto.createdAtTo,
       );
+      console.log(createdAtFilter);
       if (createdAtFilter) filters.createdAt = createdAtFilter;
     }
 
