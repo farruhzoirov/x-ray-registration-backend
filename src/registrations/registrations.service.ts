@@ -155,7 +155,18 @@ export class RegistrationsService {
     },
   ): Promise<{ totalCount: number; totalPagesCount: number }> {
     try {
-      const today = new Date();
+      const now = new Date();
+      const todayUTC = new Date(
+        Date.UTC(
+          now.getUTCFullYear(),
+          now.getUTCMonth(),
+          now.getUTCDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
       if (createRegistrationDto.birthDate) {
         createRegistrationDto.age = await getAgeHelper(
           createRegistrationDto.birthDate,
@@ -184,7 +195,7 @@ export class RegistrationsService {
 
         const [formatCreatedAt, formatToday] = await Promise.all([
           formatDate(Object(lastRegistration).createdAt),
-          formatDate(today),
+          formatDate(todayUTC),
         ]);
 
         if (formatCreatedAt === formatToday) {
