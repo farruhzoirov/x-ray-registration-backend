@@ -18,6 +18,17 @@ export class AuthDto {
   password: string;
 }
 
+
+export class ForGenerateWordDto {
+  @IsOptional()
+  @IsDateString()
+  createdAtFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  createdAtTo?: string;
+}
+
 export class GetFilteredRegistrationsDto {
   @IsOptional()
   @IsNumber()

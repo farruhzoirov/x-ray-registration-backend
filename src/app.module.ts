@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
-import databaseConfig from './config/database.config';
-import { RegistrationsModule } from './registrations/registrations.module';
+import { BackupModule } from './backup/backup.module';
 import authConfig from './config/auth.config';
 import botConfig from './config/bot.config';
-import { BackupModule } from './backup/backup.module';
+import databaseConfig from './config/database.config';
+import { RegistrationsModule } from './registrations/registrations.module';
 
 @Module({
   imports: [
@@ -36,4 +36,4 @@ import { BackupModule } from './backup/backup.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

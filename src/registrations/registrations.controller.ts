@@ -19,7 +19,7 @@ import { RegistrationsService } from './registrations.service';
 @Controller('registrations')
 @UsePipes(new ValidationPipe({ whitelist: true }))
 export class RegistrationsController {
-  constructor(private readonly registrationsService: RegistrationsService){}
+  constructor(private readonly registrationsService: RegistrationsService) { }
 
   @HttpCode(HttpStatus.OK)
   @Post('/auth')
@@ -36,6 +36,19 @@ export class RegistrationsController {
     return {
       success: true,
       message: 'Authorized successfully',
+    };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('print')
+  async generateWordFile(
+    @Body() forGenerateWordDto: GetFilteredRegistrationsDto,
+  ) {
+    const registrations = await this.registrationsService.generateWordAndPdfFile(forGenerateWordDto);
+    return {
+      success: true,
+      message: 'Word file generated successfully',
+      registrations,
     };
   }
 

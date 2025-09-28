@@ -3,25 +3,27 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
-import {
-  Registrations,
-  RegistrationsDocument,
-} from './schemas/registrations.schema';
+import { ConfigService } from '@nestjs/config';
+import { BackupService } from 'src/backup/backup.service';
+import { createDateRangeFilter } from 'src/helpers/dateRangeFilter.helper';
+import { formatDate } from 'src/helpers/formatDate.helper';
+import { formatRegistrations } from 'src/helpers/formatRegistrations.helper';
+import { generatePdfFile, generateWordFile } from 'src/helpers/generateWordFIle.helper';
+import { getAgeHelper } from 'src/helpers/getAge.helper';
+import { universalSearchQuery } from 'src/helpers/search.helper';
 import {
   AuthDto,
   CreateRegistrationDto,
   GetFilteredRegistrationsDto,
-  UpdateRegistrationDto,
+  UpdateRegistrationDto
 } from './dto/registrations.dto';
-import { getAgeHelper } from 'src/helpers/getAge.helper';
-import { universalSearchQuery } from 'src/helpers/search.helper';
-import { createDateRangeFilter } from 'src/helpers/dateRangeFilter.helper';
-import { ConfigService } from '@nestjs/config';
-import { formatDate } from 'src/helpers/formatDate.helper';
-import { BackupService } from 'src/backup/backup.service';
+import {
+  Registrations,
+  RegistrationsDocument,
+} from './schemas/registrations.schema';
 
 @Injectable()
 export class RegistrationsService {
@@ -30,7 +32,7 @@ export class RegistrationsService {
     private readonly registrationsModel: Model<RegistrationsDocument>,
     private readonly configService: ConfigService,
     private readonly backupService: BackupService
-  ) {}
+  ) { }
 
   async auth(authDto: AuthDto): Promise<boolean> {
     const username = this.configService.get('AUTH').LOGIN;
@@ -49,6 +51,70 @@ export class RegistrationsService {
     }
 
     return false;
+  }
+
+
+  async generateWordAndPdfFile(forGenerateWordDto: GetFilteredRegistrationsDto): Promise<void> {
+    const filters: Record<string, any> = {};
+
+
+    if (forGenerateWordDto.createdAtFrom || forGenerateWordDto.createdAtTo) {
+      const createdAtFilter = createDateRangeFilter(
+        forGenerateWordDto.createdAtFrom,
+        forGenerateWordDto.createdAtTo,
+      );
+      if (createdAtFilter) filters.createdAt = createdAtFilter;
+    }
+
+    if (forGenerateWordDto.birthDateFrom || forGenerateWordDto.birthDateTo) {
+      filters.birthDate = {};
+      if (forGenerateWordDto.birthDateFrom) filters.birthDate.$gte = forGenerateWordDto.birthDateFrom;
+      if (forGenerateWordDto.birthDateTo) filters.birthDate.$lte = forGenerateWordDto.birthDateTo;
+    }
+
+    if (forGenerateWordDto.ageFrom || forGenerateWordDto.ageTo) {
+      filters.age = {};
+      if (forGenerateWordDto.ageFrom) filters.age.$gte = forGenerateWordDto.ageFrom;
+      if (forGenerateWordDto.ageTo) filters.age.$lte = forGenerateWordDto.ageTo;
+    }
+
+    if (forGenerateWordDto.gender) filters.gender = forGenerateWordDto.gender;
+
+    const addRegexFilter = (field: string, value?: string) => {
+      if (value?.trim()) {
+        filters[field] = { $regex: value.trim(), $options: 'i' };
+      }
+    };
+
+    addRegexFilter('address', forGenerateWordDto.address);
+    addRegexFilter('otherAddress', forGenerateWordDto.otherAddress);
+    addRegexFilter('job', forGenerateWordDto.job);
+    addRegexFilter('otherJob', forGenerateWordDto.otherJob);
+    addRegexFilter('visitReason', forGenerateWordDto.visitReason);
+    addRegexFilter('otherVisitReason', forGenerateWordDto.otherVisitReason);
+    addRegexFilter('radiologyReport', forGenerateWordDto.radiologyReport);
+    addRegexFilter('otherRadiologyReport', forGenerateWordDto.otherRadiologyReport);
+
+    const pipeline: any[] = [
+      { $match: filters },
+      { $sort: { createdAt: -1 } }
+    ];
+
+    const registrations = await this.registrationsModel.aggregate(pipeline).exec()
+
+    if (!registrations) {
+      throw new NotFoundException({
+        success: false,
+        message: 'Registrations not found',
+      });
+    }
+
+    const formattedRegistrations = formatRegistrations(registrations);
+    const [wordFilePath, pdfFilePath] = await Promise.all([
+      generateWordFile(formattedRegistrations),
+      generatePdfFile(formattedRegistrations)
+    ]);
+    this.backupService.sendWordFileToTelegram(wordFilePath, pdfFilePath);
   }
 
   async getFilteredRegistrations(dto: GetFilteredRegistrationsDto) {
@@ -81,7 +147,6 @@ export class RegistrationsService {
         dto.createdAtFrom,
         dto.createdAtTo,
       );
-      console.log(createdAtFilter);
       if (createdAtFilter) filters.createdAt = createdAtFilter;
     }
 
@@ -139,8 +204,11 @@ export class RegistrationsService {
       }
     }
 
+    // Registrations ma'lumotlarini formatlash (key-larni name-larga o'tkazish)
+    const formattedRegistrations = formatRegistrations(registrations);
+
     return {
-      data: registrations,
+      data: formattedRegistrations,
       totalPagesCount: Math.ceil(totalCount / limit),
       totalCount,
       page,
@@ -211,7 +279,7 @@ export class RegistrationsService {
       await this.registrationsModel.create(createRegistrationDto);
       const countRegistrationDocuments =
         await this.registrationsModel.countDocuments();
-        this.backupService.handleCron()
+      this.backupService.handleCron()
       return {
         totalPagesCount: Math.ceil(countRegistrationDocuments / 20),
         totalCount: countRegistrationDocuments,
@@ -294,4 +362,5 @@ export class RegistrationsService {
       });
     }
   }
+
 }

@@ -1,15 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { exec } from 'child_process';
-import { promisify } from 'util';
-import TelegramBot from 'node-telegram-bot-api';
 import * as fs from 'fs';
-import { ConfigService } from '@nestjs/config';
+import TelegramBot from 'node-telegram-bot-api';
 import * as path from 'path';
+import { promisify } from 'util';
 
 const execAsync = promisify(exec);
-import * as crypto from 'crypto';
-(global as any).crypto = crypto;
 
 @Injectable()
 export class BackupService {
@@ -60,6 +58,15 @@ export class BackupService {
     } finally {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
+      }
+    }
+  }
+
+  async sendWordFileToTelegram(wordFilePath: string, pdfFilePath: string) {
+    for (const userId of this.userIds) {
+      if (userId) {
+        await this.bot.sendDocument(userId, fs.createReadStream(wordFilePath));
+        await this.bot.sendDocument(userId, fs.createReadStream(pdfFilePath));
       }
     }
   }
