@@ -29,7 +29,7 @@ export class BackupService {
     ];
   }
 
-  @Cron('00 19 * * *')
+  @Cron('0 19 * * *')
   async handleCron() {
     const fileName = `backup-${new Date().toISOString().split('T')[0]}.csv`;
     const filePath = path.join(__dirname, '../../backups', fileName);
