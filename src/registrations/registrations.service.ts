@@ -204,11 +204,9 @@ export class RegistrationsService {
       }
     }
 
-    // Registrations ma'lumotlarini formatlash (key-larni name-larga o'tkazish)
-    const formattedRegistrations = formatRegistrations(registrations);
 
     return {
-      data: formattedRegistrations,
+      data: registrations,
       totalPagesCount: Math.ceil(totalCount / limit),
       totalCount,
       page,
