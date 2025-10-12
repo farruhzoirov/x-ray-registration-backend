@@ -38,6 +38,8 @@ export interface FormattedRegistrationData extends Omit<RegistrationData, 'addre
  * @param registrations
  * @returns
  */
+
+
 export function formatRegistrations(registrations: RegistrationData[]): FormattedRegistrationData[] {
     return registrations.map(registration => {
         const address = registration.address === 'other' ? registration.otherAddress : mahallaList[registration.address];
