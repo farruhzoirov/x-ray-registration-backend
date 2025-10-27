@@ -2,15 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { exec } from 'child_process';
-import * as crypto from 'crypto';
 import * as fs from 'fs';
 import TelegramBot from 'node-telegram-bot-api';
 import * as path from 'path';
 import { promisify } from 'util';
 
+
 const execAsync = promisify(exec);
 
-(globalThis as any).crypto = crypto;
+
+
+// (globalThis as any).crypto = crypto;
 
 @Injectable()
 export class BackupService {
