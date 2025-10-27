@@ -1,6 +1,7 @@
 export const visitReasons = {
   "medical-examination": "Tibbiy ko'rik",
   "paid-medical-examination": "Pulli tibbiy ko'rik",
+  "military-medical-examination": "Harbiy xizmatga tibbiy ko'rik",
   "marriage": "Nikoh",
   "labor-migrant": "Mehnat muxojiri",
   "mental-illness": "Ruxiy kasallik",
