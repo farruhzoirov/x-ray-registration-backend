@@ -97,7 +97,7 @@ export class RegistrationsService {
 
     const pipeline: any[] = [
       { $match: filters },
-      { $sort: { createdAt: -1 } }
+      { $sort: { createdAt: 1 } }
     ];
 
     const registrations = await this.registrationsModel.aggregate(pipeline).exec()
