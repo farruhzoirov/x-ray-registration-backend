@@ -1,6 +1,6 @@
 export const jobList = {
   "unemployed": "Ishsiz",
-  "teacher": "O'qituvchi",
+  "teacher": "Maktab xodimi",
   "kindergarten-staff": "Bog'cha xodimi",
   "pupil": "Maktab o'quvchisi",
   "student": "Talaba",
