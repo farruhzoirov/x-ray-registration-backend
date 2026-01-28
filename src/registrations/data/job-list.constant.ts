@@ -10,4 +10,5 @@ export const jobList = {
   "chef": "Oshpaz",
   "utility-staff": "Kommunal ishchi xodim",
   "animal-keeper": "Hayvon boquvchi",
+  "labor-migrant": "Mehnat muxojiri",
 };
