@@ -57,7 +57,7 @@ export class RegistrationsController {
   async getFilteredRegistrations(
     @Body() getFilteredRegistrationsDto: GetFilteredRegistrationsDto,
   ) {
-    const { data, totalCount, totalPagesCount, page, limit } =
+    const { data, totalCount, totalPagesCount, page, limit, pendingReportsCount } =
       await this.registrationsService.getFilteredRegistrations(
         getFilteredRegistrationsDto,
       );
@@ -69,6 +69,7 @@ export class RegistrationsController {
       totalPagesCount,
       page,
       limit,
+      pendingReportsCount
     };
   }
 
