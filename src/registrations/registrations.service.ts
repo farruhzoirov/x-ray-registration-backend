@@ -190,7 +190,7 @@ export class RegistrationsService {
       this.registrationsModel.aggregate(pipeline).exec(),
       this.registrationsModel.countDocuments(filters),
       this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
-      this.registrationsModel.findOne({radiologyReport: "pending"}).lean(),
+      this.registrationsModel.countDocuments({radiologyReport: "pending"}).lean(),
     ]);
 
     if (lastRegistration) {
