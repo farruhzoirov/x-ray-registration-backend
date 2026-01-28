@@ -186,10 +186,11 @@ export class RegistrationsService {
       { $limit: limit },
     ];
 
-    const [registrations, totalCount, lastRegistration] = await Promise.all([
+    const [registrations, totalCount, lastRegistration, pendingReportsCount] = await Promise.all([
       this.registrationsModel.aggregate(pipeline).exec(),
       this.registrationsModel.countDocuments(filters),
       this.registrationsModel.findOne().sort({ createdAt: -1 }).lean(),
+      this.registrationsModel.findOne({radiologyReport: "pending"}).lean(),
     ]);
 
     if (lastRegistration) {
@@ -211,6 +212,7 @@ export class RegistrationsService {
       totalCount,
       page,
       limit,
+      pendingReportsCount
     };
   }
 
