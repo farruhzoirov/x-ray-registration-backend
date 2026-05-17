@@ -30,10 +30,10 @@ import { RegistrationsModule } from './registrations/registrations.module';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    BackupModule,
+    // BackupModule,
     RegistrationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
