@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { BackupModule } from 'src/backup/backup.module';
 import { RegistrationsController } from './registrations.controller';
 import { RegistrationsService } from './registrations.service';
 import {
   Registrations,
   RegistrationsSchema,
 } from './schemas/registrations.schema';
-import { BackupService } from 'src/backup/backup.service';
 
 @Module({
   imports: [
@@ -16,8 +16,9 @@ import { BackupService } from 'src/backup/backup.service';
         schema: RegistrationsSchema,
       },
     ]),
+    BackupModule,
   ],
   controllers: [RegistrationsController],
-  providers: [RegistrationsService, BackupService],
+  providers: [RegistrationsService],
 })
 export class RegistrationsModule {}
