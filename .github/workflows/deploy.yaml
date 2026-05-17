@@ -30,26 +30,28 @@ jobs:
               npm install -g pm2
             fi
 
-            # Puppeteer (Chrome) uchun kerakli system paketlarni o'rnatish
-            apt-get install -y \
-              libnspr4 \
-              libnss3 \
-              libatk1.0-0t64 \
-              libatk-bridge2.0-0t64 \
-              libcups2t64 \
-              libdrm2 \
-              libxkbcommon0 \
-              libxcomposite1 \
-              libxdamage1 \
-              libxfixes3 \
-              libxrandr2 \
-              libgbm1 \
-              libasound2t64 \
-              libpango-1.0-0 \
-              libpangocairo-1.0-0 \
-              libgtk-3-0t64 \
-              libx11-xcb1 \
-              libxcb-dri3-0 || true
+            # Puppeteer (Chrome) uchun kerakli system paketlarni o'rnatish (faqat birinchi marta)
+            if ! dpkg -s libnspr4 >/dev/null 2>&1; then
+              apt-get install -y \
+                libnspr4 \
+                libnss3 \
+                libatk1.0-0t64 \
+                libatk-bridge2.0-0t64 \
+                libcups2t64 \
+                libdrm2 \
+                libxkbcommon0 \
+                libxcomposite1 \
+                libxdamage1 \
+                libxfixes3 \
+                libxrandr2 \
+                libgbm1 \
+                libasound2t64 \
+                libpango-1.0-0 \
+                libpangocairo-1.0-0 \
+                libgtk-3-0t64 \
+                libx11-xcb1 \
+                libxcb-dri3-0 || true
+            fi
 
             cd /home/${{ secrets.SERVER_USER }}
 
@@ -61,7 +63,12 @@ jobs:
             git reset --hard HEAD
             git pull origin main
 
-            npm install --force
+            PACKAGE_HASH=$(md5sum package.json | awk '{print $1}')
+            SAVED_HASH=$(cat .npm_install_hash 2>/dev/null || echo "")
+            if [ "$PACKAGE_HASH" != "$SAVED_HASH" ] || [ ! -d "node_modules" ]; then
+              npm install --force
+              echo "$PACKAGE_HASH" > .npm_install_hash
+            fi
             npm run build
 
             cat > .env <<EOL

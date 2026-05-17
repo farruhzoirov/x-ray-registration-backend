@@ -66,9 +66,7 @@ export class BackupService {
     const filePath = path.join(__dirname, '../../backups', fileName);
 
     try {
-      if (!fs.existsSync(path.dirname(filePath))) {
-        fs.mkdirSync(path.dirname(filePath), { recursive: true });
-      }
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 
       const docs = await this.registrationsModel
         .find()
@@ -80,7 +78,7 @@ export class BackupService {
         BACKUP_FIELDS.map((field) => this.escapeCsvValue(doc[field])).join(','),
       );
 
-      fs.writeFileSync(filePath, [headers, ...rows].join('\n'), 'utf8');
+      await fs.promises.writeFile(filePath, [headers, ...rows].join('\n'), 'utf8');
 
       for (const userId of this.userIds) {
         if (userId) {
@@ -92,9 +90,7 @@ export class BackupService {
     } catch (err) {
       this.logger.error('❌ Backup error:', err);
     } finally {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      await fs.promises.unlink(filePath).catch(() => {});
     }
   }
 
