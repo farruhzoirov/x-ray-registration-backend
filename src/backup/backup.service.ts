@@ -35,6 +35,7 @@ export class BackupService {
   private readonly logger = new Logger(BackupService.name);
   private bot: TelegramBot;
   private userIds: string[];
+  private isRunning = false;
 
   constructor(
     private readonly configService: ConfigService,
@@ -64,6 +65,9 @@ export class BackupService {
   }
 
   async handleCron() {
+    if (this.isRunning) return;
+    this.isRunning = true;
+
     const fileName = `backup-${new Date().toISOString().split('T')[0]}.csv`;
     const filePath = path.join(__dirname, '../../backups', fileName);
 
@@ -92,6 +96,7 @@ export class BackupService {
     } catch (err) {
       this.logger.error('❌ Backup error:', err);
     } finally {
+      this.isRunning = false;
       await fs.promises.unlink(filePath).catch(() => {});
     }
   }
