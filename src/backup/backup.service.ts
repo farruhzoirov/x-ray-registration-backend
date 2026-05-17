@@ -46,10 +46,12 @@ export class BackupService {
       { polling: false },
     );
     this.userIds = [
-      this.configService.get('BOT').ADMIN_1_ID,
-      this.configService.get('BOT').ADMIN_2_ID,
-      this.configService.get('BOT').USER_ID,
-    ];
+      ...new Set([
+        this.configService.get('BOT').ADMIN_1_ID,
+        this.configService.get('BOT').ADMIN_2_ID,
+        this.configService.get('BOT').USER_ID,
+      ]),
+    ].filter(Boolean);
   }
 
   private escapeCsvValue(val: unknown): string {
