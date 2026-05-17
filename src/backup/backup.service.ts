@@ -7,10 +7,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import * as path from 'path';
 import { promisify } from 'util';
 
-
 const execAsync = promisify(exec);
-
-
 
 // (globalThis as any).crypto = crypto;
 
